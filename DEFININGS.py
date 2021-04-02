@@ -1,7 +1,7 @@
 # DEFININGs
 # The obtab for the SIC
 OPTAB = {
-	"ADD" : "18",
+	"ADD": "18",
 	"AND": "40",
 	"COMP": "28",
 	"DIV": "24",

@@ -1,5 +1,4 @@
 #     THIS IS PASS 1     #
-
 # import defined objects and arrays from a file
 import DEFININGS
 
