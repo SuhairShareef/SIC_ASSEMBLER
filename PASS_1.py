@@ -6,7 +6,7 @@
 #   Name: Suhair Shareef
 #   ID  : 171055
 #       &&
-#   Name: Beesan Atawnah
+#   Name: Beesan Atawna
 #   ID  : 171006
 #-------------------------------------------------------------------------#
 
