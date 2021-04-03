@@ -1,4 +1,15 @@
-#     THIS IS PASS 1     #
+# Palestine Polytechnic University
+# College of IT & Computer Engineering
+# System Programming Project: SIC Assembler PASS #1
+#-------------------------------------------------------------------------#
+# Done by:
+#   Name: Suhair Shareef
+#   ID  : 171055
+#       &&
+#   Name: Beesan Atawnah
+#   ID  : 171006
+#-------------------------------------------------------------------------#
+
 # import defined objects and arrays from a file
 import DEFININGS
 
