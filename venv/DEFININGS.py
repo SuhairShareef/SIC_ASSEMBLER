@@ -39,3 +39,10 @@ DIRECTIVES = [
     "LTORG"
 ]
 
+ERRORLIST = [
+	"File is empty\n",
+	"Line not in fixed format\n",
+	"Duplicated label\n",
+	"Invalid operation code\n",
+	"Invalid data\n"
+]
