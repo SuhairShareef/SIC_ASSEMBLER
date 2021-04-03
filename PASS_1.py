@@ -113,34 +113,34 @@ if line:
                     print(ERRORLIST[3])
                     ERRCTR += 1
 
-                literals = []
-                if line[16:17] == '=':
+                literals = [] #literals array
+                if line[16:17] == '=':  #meaning its letiral
                     exist = 1
                     literal = line[17:35].strip()
 
-                    if literal[0] == 'X':
+                    if literal[0] == 'X': # x in hexadecimal
                         hexcode = literal[2:-1]
 
                     elif literal[0] == 'C':
-                        hexcode = literal[2:-1].encode("utf-8").hex()
+                        hexcode = literal[2:-1].encode("utf-8").hex() #c in hex
 
                     else:
-                        ERRORS.write(ERRORLIST[4])
+                        ERRORS.write(ERRORLIST[4]) #not valid literal
                         print(ERRORLIST[4])
                         ERRCTR += 1
                         break
 
                     if literal not in LITPOOl:
                         literals = [hexcode, len(hexcode) / 2, 0]
-                        LITTAB[literal] = literals
+                        LITTAB[literal] = literals #add literals into literal table
                         LITPOOl[literal] = literals
                         LITTABLE.write(str(LITPOOl[literal]) + "\n")
 
-            if operation == "END":
+            if operation == "END":#end of program
                 OUTPUT.write(" " * 10 + line)
 
     else:
-        ERRORS.write(ERRORLIST[1])
+        ERRORS.write(ERRORLIST[1]) 
         print(ERRORLIST[1])
 
 else:
@@ -149,13 +149,13 @@ else:
 
 if LITTAB:
     for literal in LITTAB:
-        LITTAB[literal][2] = hex(LOCCTR)[2:]
+        LITTAB[literal][2] = hex(LOCCTR)[2:] #literals in hexadecimal
         OUTPUT.write(hex(LOCCTR)[2:] + " " * (10 - len(str(LOCCTR))) + "*" + " " * 7 + "=" + literal + "\n")
         LOCCTR += int(LITTAB[literal][1])
 
-length = int(LOCCTR) - int(ADDSTA)
-PRGLTH = hex(int(length))[2:].format(int(length))
-loc = hex(int(LOCCTR))[2:].format(int(LOCCTR))
+length = int(LOCCTR) - int(ADDSTA) #program length ( current location counter - start address)
+PRGLTH = hex(int(length))[2:].format(int(length)) #program length in hexadecimal
+loc = hex(int(LOCCTR))[2:].format(int(LOCCTR)) #location counter in hexadecimal
 INPUT.close()
 OUTPUT.close()
 LITTABLE.close()
