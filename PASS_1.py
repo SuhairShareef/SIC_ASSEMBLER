@@ -13,8 +13,11 @@
 # import defined objects and arrays from a file
 import DEFININGS
 
-# Read source file --> IT HAS TO BE .asm
-INPUT = open("cource_file.asm", "r")
+# Read source files --> IT HAS TO BE .asm
+# There's multiple source files to test if the program is working correctly
+# Uncomment the source file you want to try
+INPUT = open("Test_File_1.asm", "r")
+# INPUT = open("Test_File_2.asm", "r")
 
 # Output file --> intermediate file
 OUTPUT = open("intmdte_file.mdt", "w+")
