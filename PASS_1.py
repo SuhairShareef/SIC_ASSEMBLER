@@ -43,6 +43,7 @@ print("\n**************SIC ASSEMBLER*****************\n")
 # Reading from file
 # Reading first line
 line = INPUT.readline()
+
 if line:
     if line[9:15].strip() == "START":
         PRGNAME = line[0:8].strip()  # get program name
@@ -114,30 +115,30 @@ if line:
                     print(ERRORLIST[3])
                     ERRCTR += 1
 
-                literals = [] #literals array
-                if line[16:17] == '=':  #meaning its letiral
+                literals = [] # Literals array
+                if line[15:16] == '=':  # if it's a literal
                     exist = 1
-                    literal = line[17:35].strip()
+                    literal = line[16:35].strip()
 
-                    if literal[0] == 'X': # x in hexadecimal
+                    if literal[0] == 'X':  # x in hexadecimal
                         hexcode = literal[2:-1]
 
                     elif literal[0] == 'C':
-                        hexcode = literal[2:-1].encode("utf-8").hex() #c in hex
+                        hexcode = literal[2:-1].encode("utf-8").hex()  # C in hex
 
                     else:
-                        ERRORS.write(ERRORLIST[4]) #not valid literal
+                        ERRORS.write(ERRORLIST[4])  # Invalid literal
                         print(ERRORLIST[4])
                         ERRCTR += 1
                         break
 
                     if literal not in LITPOOl:
                         literals = [hexcode, len(hexcode) / 2, 0]
-                        LITTAB[literal] = literals #add literals into literal table
+                        LITTAB[literal] = literals  # add literals into literal table
                         LITPOOl[literal] = literals
                         LITTABLE.write(str(LITPOOl[literal]) + "\n")
 
-            if operation == "END":#end of program
+            if operation == "END":
                 OUTPUT.write(" " * 10 + line)
 
     else:
@@ -150,18 +151,21 @@ else:
 
 if LITTAB:
     for literal in LITTAB:
-        LITTAB[literal][2] = hex(LOCCTR)[2:] #literals in hexadecimal
+        LITTAB[literal][2] = hex(LOCCTR)[2:]  # literals in hexadecimal
         OUTPUT.write(hex(LOCCTR)[2:] + " " * (10 - len(str(LOCCTR))) + "*" + " " * 7 + "=" + literal + "\n")
         LOCCTR += int(LITTAB[literal][1])
 
-length = int(LOCCTR) - int(ADDSTA) #program length ( current location counter - start address)
-PRGLTH = hex(int(length))[2:].format(int(length)) #program length in hexadecimal
-loc = hex(int(LOCCTR))[2:].format(int(LOCCTR)) #location counter in hexadecimal
+length = int(LOCCTR) - int(ADDSTA)  # program length ( current location counter - start address)
+PRGLTH = hex(int(length))[2:].format(int(length))  # program length in hexadecimal
+loc = hex(int(LOCCTR))[2:].format(int(LOCCTR))  # location counter in hexadecimal
+
+# Close files
 INPUT.close()
 OUTPUT.close()
 LITTABLE.close()
 ERRORS.close()
 
+# Print output of pass 1
 print("PROGRAM NAME: " + PRGNAME)
 print("PROGRAM LENGTH: " + str(PRGLTH).upper())
 print("LOCATION COUNTER: " + str(loc).upper())

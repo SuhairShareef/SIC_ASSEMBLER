@@ -29,6 +29,8 @@ ADDARR = []   # An array that is used to hold the list of addresses in the progr
 f = ""
 f1 = ""
 
+print(LITPOOl)
+
 if ERRCTR == 0:
     while True:
         line = INTMDT.readline()  # Read line from the intermediate file
@@ -37,96 +39,83 @@ if ERRCTR == 0:
 
         currentLine = line
 
-        ADDRESS = currentLine[0:5].strip()   # Getting the address
-        OPCODE = currentLine[18:26].strip()  # Getting the opcode
+        ADDRESS = currentLine[0:8].strip()     # Getting the address
+        LABEL = currentLine[9:17].strip()      # Getting label
+        MNEMONIC = currentLine[18:25].strip()  # Getting the mnemonic
+        OPERAND = currentLine[25:34].strip()   # Getting operand
 
-        if OPCODE != "START":  # If the opcode is not START add the address to the address list (prevent duplications)
+        if MNEMONIC != "START":  # If we add START address twice there will duplication
             ADDARR.append(ADDRESS)
 
-        LABEL = currentLine[9:17].strip()       # Getting label
-        OPERAND = currentLine[26:34].strip()    # Getting operand
-
-        # Create object code for program header
-        if OPCODE == "START":
+        # Write Header record to object program
+        if MNEMONIC == "START":
             OBJFILE.write("H^" + LABEL + "^00" + currentLine[0:5].strip().upper() + "^00" + PRGLTH.upper())
 
             ADDARR.append(currentLine[0:6].strip())
-            LISTARR.append("")      # Add null listing for START
+            LISTARR.append("")      # Add listing for START
 
-        elif OPCODE == "END":
-            LISTARR.append("")      # Add null listing for END
+        elif MNEMONIC == "END":
+            LISTARR.append("")      # Add listing for END
 
-        else:
-            if OPCODE in DIRECTIVES or OPCODE in OPTAB.keys():
+        else:  # Search OPTAB for MNEMONIC
+            if MNEMONIC in DIRECTIVES or MNEMONIC in OPTAB.keys():
+                if MNEMONIC == "RSUB":
+                    objCode = OPTAB[MNEMONIC] + "0000"  # RSUB code + 0000 // has no operand
 
-                currentOpcode = OPCODE
-                if currentOpcode == "RSUB":
-                    code = OPTAB[OPCODE[0:]]
-                    currentOpcode = code + "0000"
-                    LISTARR.append(currentOpcode)
-                    LISTFILE.write(currentOpcode)
-                    LISTFILE.write("\n")
+                    LISTARR.append(objCode)
+                    LISTFILE.write(objCode + "\n")  # Write to listing file
 
-                elif OPCODE not in DIRECTIVES and ",X" not in OPERAND:
-                    code = OPTAB[OPCODE[0:]]
+                elif MNEMONIC not in DIRECTIVES and ",X" not in OPERAND:  # Mnemonic in OPTAB && not indexed
                     if OPERAND in SYMTAB.keys():
-                        sym = SYMTAB[OPERAND[0:]]
-                        LISTFILE.write(code + sym)
-                        LISTFILE.write("\n")
-                        LISTARR.append(code + sym)
+                        LISTFILE.write(OPTAB[MNEMONIC] + SYMTAB[OPERAND] + "\n")  # ObjCode = opcode + operand address
+                        LISTARR.append(OPTAB[MNEMONIC] + SYMTAB[OPERAND])
 
-                    elif "=" in OPERAND:
-                        temp2 = LITPOOl[str(OPERAND)[1:]]
-                        LISTFILE.write(code + temp2[2])
-                        LISTFILE.write("\n")
-                        LISTARR.append(code + temp2[2])
+                    elif "=" in OPERAND:  # If it's a literal
+                        LISTFILE.write(OPTAB[MNEMONIC] + LITPOOl[str(OPERAND)[1:]][2] + "\n")
+                        LISTARR.append(OPTAB[MNEMONIC] + LITPOOl[str(OPERAND)[1:]][2])
 
-                elif OPERAND[-2:] == ",X":
-                    opend = OPERAND[:-2]
-                    if opend in SYMTAB.keys():
-                        first = SYMTAB[opend][0:1]
-                        sec = SYMTAB[opend[0:]]
+                elif OPERAND[-2:] == ",X":  # If it's hex
+                    if OPERAND[:-2] in SYMTAB.keys():  # If it's in the SYMTAB then convert string to hex after adding
+                        hexCode = hex(int(bin(1)[-1:] + "00" + bin(int(SYMTAB[OPERAND[:-2]][0:1]))[2:]))[-1:]
+                        objCode = OPTAB[MNEMONIC[0:]] + hexCode + (SYMTAB[OPERAND[:-2]][1] +
+                                  SYMTAB[OPERAND[:-2]][2] + SYMTAB[OPERAND[:-2]][3])
 
-                        value4 = hex(int(bin(1)[-1:] + "00" + bin(int(first))[2:]))[-1:]
-                        currentOpcode = OPTAB[OPCODE[0:]] + value4 + (sec[1] + sec[2] + sec[3])
-                        LISTFILE.write(currentOpcode)
-                        LISTFILE.write("\n")
-                        LISTARR.append(currentOpcode)
+                        LISTFILE.write(objCode + "\n")
+                        LISTARR.append(objCode)
 
-                elif OPCODE == "RESW" or OPCODE == "RESB" or OPCODE == "LTORG":
+                elif MNEMONIC == "RESW" or MNEMONIC == "RESB" or MNEMONIC == "LTORG":  # No opcode for those dir
                     LISTARR.append("")
 
-                elif OPCODE == "WORD":
-                    code = hex(int(OPERAND))
-                    code1 = str(code)[2:]
-                    if len(code1) < 6:
-                        for i in range(6 - len(code1)):
-                            code1 = "0" + code1
-                    LISTFILE.write(code1)
-                    LISTFILE.write("\n")
-                    LISTARR.append(code1)
+                elif MNEMONIC == "WORD":  # If word convert operand to hex
+                    objCode = str(hex(int(OPERAND)))[2:]
 
-                elif OPCODE == "BYTE" and OPCODE != "LTORG":
-                    print(OPERAND)
-                    temp = OPERAND[2:len(OPERAND) - 1]
-                    if "X'" in OPERAND:
-                        LISTFILE.write(temp)
-                        LISTFILE.write("\n")
+                    if len(objCode) < 6:  # Making sure it's six digits to fit object format
+                        for i in range(6 - len(objCode)):
+                            objCode = "0" + objCode
+
+                    LISTFILE.write(objCode + "\n")
+                    LISTARR.append(objCode)
+
+                elif MNEMONIC == "BYTE" and MNEMONIC != "LTORG":  # the opcode =BYTE and it's not literal then we print the operand
+                    temp = OPERAND[2:len(OPERAND) - 1]  # store the operand that comes after X' or C'
+
+                    if "X'" in OPERAND:  # If hex such as X'05' we start from 0 to the end 5
+                        LISTFILE.write(temp + "\n")  # Write into listing file
                         LISTARR.append(temp)
 
-                    elif "C'" in OPERAND:
-                        for i in temp:
-                            hexcode = hex(ord(i))[2:]
-                            LISTFILE.write(str(hexcode))
-                            f += hexcode
-                        LISTARR.append(f)
-                        LISTFILE.write("\n")
+                    elif "C'" in OPERAND:  # means that the operand is in ascii
+                        for i in temp:     # iterate through all characters
+                            hexCode = hex(ord(i))[2:]  # Convert to hex
+                            LISTFILE.write(str(hexCode))  # store hexcode
+                            objCode += hexCode
 
-            elif LABEL == "*":
-                temp = LITPOOl[str(OPCODE)[1:]]
-                LISTFILE.write(temp[0])
-                LISTFILE.write("\n")
-                LISTARR.append(temp[0])
+                        LISTARR.append(objCode + "\n")
+
+            elif LABEL == "*":  # lable = current location counter
+                literal = LITPOOl[str(MNEMONIC)[1:]]  # Get the literal
+
+                LISTFILE.write(literal[0] + "\n")
+                LISTARR.append(literal[0])
 
             else:
                 LISTARR.append("")
@@ -135,42 +124,45 @@ else:
     ERRORS.write("Cannot execute pass 2. The input file has errors!")
     print("Cannot execute pass 2. The input file has errors!")
 
-i = 1
-print(LISTARR)
+# Writing to object program
+currentListing = 1
 
-while i < len(LISTARR):
-    if i == 1:
-        addr = ADDARR[1]
-        print(addr)
-    else:
-        addr = ADDARR[i]
-    cont = 0
-    if LISTARR[i] != "":
-        OBJFILE.write("\nT^00" + addr.upper() + "^")
-        poINTMDT = OBJFILE.tell()
+while currentListing < len(LISTARR):  # Iterate through all listings
+
+    currentAddress = ADDARR[currentListing]
+    lngth = 0  # To calc length of record
+
+    if LISTARR[currentListing] != "":
+        # Write text record into OBJFILE
+        OBJFILE.write("\nT^00" + currentAddress.upper() + "^")
+        pointer = OBJFILE.tell()   # save current position of the file object
         OBJFILE.write("  ")
-        j = i
-        while j < len(LISTARR) and LISTARR[j] != "" and cont < 10:
-            print(LISTARR[j].upper())
-            OBJFILE.write("^" + LISTARR[j].upper())
-            cont += 1
-            j += 1
-        i = j - 1
-        OBJFILE.seek(poINTMDT)
-        print(int(ADDARR[i], 16))
-        print(int(addr, 16))
-        tempaddr = str(int(ADDARR[i], 16) - int(addr, 16) + int(3))
-        tempaddr1 = hex(int(tempaddr))
-        taddr = tempaddr1[2:4]
-        print(taddr)
-        if len(taddr) == 1:
-            taddr = "0" + taddr
-        if taddr == "03":
-            taddr = "01"
-        OBJFILE.write(taddr.upper())
-        OBJFILE.seek(0, 2)
+        j = currentListing
 
-    i += 1
+        # Length of LISTARR and LISTARR[j] is not equal space and the number of words less than 10
+        # (the max length of text record )
+        while j < len(LISTARR) and LISTARR[j] != "" and lngth < 10:
+            OBJFILE.write("^" + LISTARR[j].upper())
+            lngth += 1
+            j += 1
+
+        currentListing = j - 1
+
+        OBJFILE.seek(pointer)  # Set the current position of file at the last position in OBJFILE
+        # the current address in this text record - first address in ADDARR then add 3 (each word 3 byte)
+        tempAdd = hex(int(str(int(ADDARR[currentListing], 16) - int(currentAddress, 16) + int(3))))[2:4]
+
+        if len(tempAdd) == 1:
+            tempAdd = "0" + tempAdd # add 0 before text address (fixed format)
+
+        if tempAdd == "03":
+            tempAdd = "01"
+
+        OBJFILE.write(tempAdd.upper())
+        OBJFILE.seek(0, 2)  # set the file's current position at the offset
+
+    currentListing += 1
+
 OBJFILE.write("\n" + "E" + "^00" + str(hex(ADDSTA))[2:])
 OBJFILE.close()
 INTMDT.close()
