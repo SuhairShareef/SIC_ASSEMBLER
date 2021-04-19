@@ -28,11 +28,10 @@ LISTARR = []  # An array that is used to hold all listings among the execution o
 ADDARR = []   # An array that is used to hold the list of addresses in the program
 f = ""
 f1 = ""
-currentLine = INTMDT.readline()  # Read first line from the intermediate file
 
 if ERRCTR == 0:
     while True:
-        line = INTMDT.readline()
+        line = INTMDT.readline()  # Read line from the intermediate file
         if not line:  # Check if there's no lines to read
             break
 
@@ -41,59 +40,64 @@ if ERRCTR == 0:
         ADDRESS = currentLine[0:5].strip()   # Getting the address
         OPCODE = currentLine[18:26].strip()  # Getting the opcode
 
-        if OPCODE != "START":
+        if OPCODE != "START":  # If the opcode is not START add the address to the address list (prevent duplications)
             ADDARR.append(ADDRESS)
 
-        label = currentLine[9:17].strip()
-        operand = currentLine[26:34].strip()
-        if OPCODE == "START":
-            ADDARR.append(currentLine[0:6].strip())
-            OBJFILE.write("H^" + label + "^00" + currentLine[0:5].strip().upper() + "^00" + PRGLTH.upper())
-            LISTARR.append("")
-        elif OPCODE == "END":
-            LISTARR.append("")
-        else:
-            if OPCODE in OPTAB.keys() or OPCODE in DIRECTIVES:
+        LABEL = currentLine[9:17].strip()       # Getting label
+        OPERAND = currentLine[26:34].strip()    # Getting operand
 
-                op = OPCODE
-                if op == "RSUB":
+        # Create object code for program header
+        if OPCODE == "START":
+            OBJFILE.write("H^" + LABEL + "^00" + currentLine[0:5].strip().upper() + "^00" + PRGLTH.upper())
+
+            ADDARR.append(currentLine[0:6].strip())
+            LISTARR.append("")      # Add null listing for START
+
+        elif OPCODE == "END":
+            LISTARR.append("")      # Add null listing for END
+
+        else:
+            if OPCODE in DIRECTIVES or OPCODE in OPTAB.keys():
+
+                currentOpcode = OPCODE
+                if currentOpcode == "RSUB":
                     code = OPTAB[OPCODE[0:]]
-                    op = code + "0000"
-                    LISTARR.append(op)
-                    LISTFILE.write(op)
+                    currentOpcode = code + "0000"
+                    LISTARR.append(currentOpcode)
+                    LISTFILE.write(currentOpcode)
                     LISTFILE.write("\n")
 
-                elif OPCODE not in DIRECTIVES and ",X" not in operand:
+                elif OPCODE not in DIRECTIVES and ",X" not in OPERAND:
                     code = OPTAB[OPCODE[0:]]
-                    if operand in SYMTAB.keys():
-                        sym = SYMTAB[operand[0:]]
+                    if OPERAND in SYMTAB.keys():
+                        sym = SYMTAB[OPERAND[0:]]
                         LISTFILE.write(code + sym)
                         LISTFILE.write("\n")
                         LISTARR.append(code + sym)
 
-                    elif "=" in operand:
-                        temp2 = LITPOOl[str(operand)[1:]]
+                    elif "=" in OPERAND:
+                        temp2 = LITPOOl[str(OPERAND)[1:]]
                         LISTFILE.write(code + temp2[2])
                         LISTFILE.write("\n")
                         LISTARR.append(code + temp2[2])
 
-                elif operand[-2:] == ",X":
-                    opend = operand[:-2]
+                elif OPERAND[-2:] == ",X":
+                    opend = OPERAND[:-2]
                     if opend in SYMTAB.keys():
                         first = SYMTAB[opend][0:1]
                         sec = SYMTAB[opend[0:]]
 
                         value4 = hex(int(bin(1)[-1:] + "00" + bin(int(first))[2:]))[-1:]
-                        op = OPTAB[OPCODE[0:]] + value4 + (sec[1] + sec[2] + sec[3])
-                        LISTFILE.write(op)
+                        currentOpcode = OPTAB[OPCODE[0:]] + value4 + (sec[1] + sec[2] + sec[3])
+                        LISTFILE.write(currentOpcode)
                         LISTFILE.write("\n")
-                        LISTARR.append(op)
+                        LISTARR.append(currentOpcode)
 
                 elif OPCODE == "RESW" or OPCODE == "RESB" or OPCODE == "LTORG":
                     LISTARR.append("")
 
                 elif OPCODE == "WORD":
-                    code = hex(int(operand))
+                    code = hex(int(OPERAND))
                     code1 = str(code)[2:]
                     if len(code1) < 6:
                         for i in range(6 - len(code1)):
@@ -102,17 +106,15 @@ if ERRCTR == 0:
                     LISTFILE.write("\n")
                     LISTARR.append(code1)
 
-
-
                 elif OPCODE == "BYTE" and OPCODE != "LTORG":
-                    print(operand)
-                    temp = operand[2:len(operand) - 1]
-                    if "X'" in operand:
+                    print(OPERAND)
+                    temp = OPERAND[2:len(OPERAND) - 1]
+                    if "X'" in OPERAND:
                         LISTFILE.write(temp)
                         LISTFILE.write("\n")
                         LISTARR.append(temp)
 
-                    elif "C'" in operand:
+                    elif "C'" in OPERAND:
                         for i in temp:
                             hexcode = hex(ord(i))[2:]
                             LISTFILE.write(str(hexcode))
@@ -120,7 +122,7 @@ if ERRCTR == 0:
                         LISTARR.append(f)
                         LISTFILE.write("\n")
 
-            elif label == "*":
+            elif LABEL == "*":
                 temp = LITPOOl[str(OPCODE)[1:]]
                 LISTFILE.write(temp[0])
                 LISTFILE.write("\n")
