@@ -10,28 +10,26 @@
 #   ID  : 171006
 #-------------------------------------------------------------------------#
 
-# import defined objects and arrays from a file
-import DEFININGS
+# Import defined objects and arrays from a file
+from INPUT.DEFININGS import *
 
 # Read source files --> IT HAS TO BE .asm
 # There's multiple source files to test if the program is working correctly
 # Uncomment the source file you want to try
-INPUT = open("Test_File_1.asm", "r")
-# INPUT = open("Test_File_2.asm", "r")
+INPUT = open("INPUT/Test_File_1.asm", "r")
+# INPUT = open("INPUT/Test_File_2.asm", "r")
+# INPUT = open("INPUT/Test_File_3.asm", "r")
 
 # Output file --> intermediate file
-OUTPUT = open("intmdte_file.mdt", "w+")
+OUTPUT = open("OUTPUT/intmdte_file.mdt", "w+")
 
 # Log file for errors --> errors file
-ERRORS = open("errors_file.txt", "w+")
+ERRORS = open("OUTPUT/errors_file.txt", "w+")
 
 # Saving literal table
-LITTABLE = open("LITTABLE.txt", "w+")
+LITTABLE = open("OUTPUT/LITTABLE.txt", "w+")
 
 # Definings
-OPTAB = DEFININGS.OPTAB
-DIRECTIVES = DEFININGS.DIRECTIVES
-ERRORLIST = DEFININGS.ERRORLIST
 SYMTAB = {}
 LITTAB = {}
 LOCCTR = 0
